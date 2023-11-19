@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"> 
+    </script> 
+  </head>
+  <body>
+    <div style="height: 100px;" class="bg-info"><h1 class="text-center my-3 py-3">Employee Management System</h1></div>
+    <br><br>
+    <div class="container">
+        <div class="row">
+            <h4 style="text-decoration: underline">Filter Based On Criteria</h4>
+            <div class="col-md-2">
+                <select class="form-control" name="" id="filterCriteria">
+                    <option value="alldetails">All Details</option>
+                    <option value="fullname">fullname</option>
+                    <option value="department">department</option>
+                    <option value="salary">salary</option>
+                    <option value="age">age</option>
+                </select>
+            </div>
+            <div id="filterValueContainer" class="col-md-2">
+                <input class="form-control" type="text" id="filterValue" name="filterValue" id="filterValue" placeholder="Filter value">
+            </div>
+            <div class="col-md-2">
+                <button class="form-control btn btn-primary" id="search">Search</button>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <h4 style="text-decoration: underline">Search Using ID</h4>
+
+            <div id="filterValueContainer" class="col-md-2">
+                <input class="form-control" type="text" name="EmployeeID" id="EmployeeID" placeholder="Employee ID">
+            </div>
+            <div class="col-md-2">
+                <button class="form-control btn btn-primary" id="idSearch">Search</button>
+            </div>
+        </div>
+        <button id="addEmployeeBtn" type="button" style="display: flex;" class="btn btn-primary ms-auto mt-3" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+            Add Employee
+          </button>
+        <br>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-body table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>EMP ID</th>
+                    <th>NAME</th>
+                    <th>DEPARTMENT</th>
+                    <th>DOB</th>
+                    <th>AGE</th>
+                    <th>SALARY</th>
+                    <th>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="tableContent">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      
+      </div>
+    </div>
+
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeelabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addEmployeelabel">Add Employee</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="addEmployee">
+                <div class="mb-3">
+                  <label for="fullname" class="form-label">Fullname</label>
+                  <input type="text" class="form-control" id="fullname" name="fullname" required>
+                </div>
+                <div class="mb-3">
+                  <label for="dob" class="form-label">DOB</label>
+                  <input type="date" class="form-control" id="dob" name="dob" required>
+                </div>
+                <div class="mb-3">
+                  <label for="department" class="form-label">Department</label>
+                  <select class="form-control" id="department" name="department" required>
+                    <option value="" selected disabled>Select a department</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="salary" class="form-label">Salary</label>
+                  <input type="number" class="form-control" id="salary" name="salary" required>
+                </div>
+                <button type="submit" id="modalSubmit" class="btn btn-primary">Add Employee</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <script>
+        const url = 'http://localhost:3000'
+        // const url = 'https://ems-snappedrat.netlify.app/.netlify/functions/api'
+
+
+        document.getElementById('addEmployeeBtn').addEventListener('click',function(event){
+            document.getElementById('addEmployee').reset()
+            document.getElementById("addEmployeelabel").innerHTML = "Add Employee";
+            document.getElementById("modalSubmit").innerHTML = "Add Employee";
+        })
+
+        document.getElementById('addEmployee').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(this);
+        let data = Object.fromEntries(formData);
+        let api = ''
+        let method=''
+        if(document.getElementById('addEmployeelabel').innerHTML.includes('Edit')){
+            api = '/editEmployee/'+document.getElementById('addEmployeelabel').innerHTML.split('-')[1].trim();
+            method = 'PUT'
+        }
+        else{
+            api = '/addEmployee'
+            method = 'POST'
+        }
+        fetch(url + api, {
+        method: method,
+        headers : {
+                    "Content-Type" : "application/json"
+                },
+        body: JSON.stringify({
+            fullname : data.fullname,
+            dob : data.dob, 
+            department : data.department,
+            salary : Number(data.salary)
+        })
+        })
+        .then(data => {
+        console.log('Employee added successfully:', data.message);
+        document.getElementById('addEmployee').reset()
+        $('.btn-close').click();
+        location.reload()
+        })
+        .catch(error => {
+        console.error('Error adding employee:', error);
+        });
+    });
+
+        let filterCriteriaSelect = document.getElementById('filterCriteria');
+        let filterValueContainer = document.getElementById('filterValueContainer');
+        filterCriteriaSelect.addEventListener('change', updateFilterForm);
+        function updateFilterForm() 
+        {
+         
+            const selectedCriteria = filterCriteriaSelect.value;
+            filterValueContainer.innerHTML = '';
+            if (selectedCriteria == 'salary' || selectedCriteria == 'age') {
+
+            const minInput = document.createElement('input');
+            minInput.type = 'text';
+            minInput.name = `min`;
+            minInput.id = 'minValue';
+            minInput.className = 'form-control'
+            minInput.placeholder = `Min ${selectedCriteria}`;
+
+            const maxInput = document.createElement('input');
+            maxInput.type = 'text';
+            maxInput.name = `max`;
+            maxInput.id = 'maxValue'
+            maxInput.className = 'form-control'
+            maxInput.placeholder = `Max ${selectedCriteria}`;
+
+            filterValueContainer.appendChild(minInput);
+            filterValueContainer.appendChild(document.createTextNode(' to '));
+            filterValueContainer.appendChild(maxInput);
+            } 
+            else {
+            const singleInput = document.createElement('input');
+            singleInput.type = 'text';
+            singleInput.name = 'filterValue';
+            singleInput.id = 'filterValue';
+            singleInput.className = 'form-control'
+            singleInput.placeholder = `Filter value`;
+
+            filterValueContainer.appendChild(singleInput);
+            }
+        }
+        const search = document.getElementById('search');
+        search.addEventListener('click', criteriaSearchInfo);
+
+        async function criteriaSearchInfo()
+        {
+            const filterCriteria = document.getElementById('filterCriteria').value;
+            let filterValue;
+            if (filterCriteria == 'salary' || filterCriteria == 'age') {
+                const minValue = document.getElementById('minValue').value;
+                const maxValue = document.getElementById('maxValue').value;
+                filterValue = {min: minValue, max: maxValue};
+            } else {
+                filterValue = document.getElementById('filterValue').value;
+            } 
+
+            let res = await fetch(url+'/filterCriteria?key='+filterCriteria+'&value='+(typeof(filterValue) == 'object' ? JSON.stringify(filterValue) : filterValue), 
+            {
+                method : 'GET',
+                headers : {
+                    "Content-Type" : "application/json"
+                },
+            })
+            let val = await res.json();
+            tableUpdate(val)
+            console.log(val);
+        }
+        const idSearch = document.getElementById('idSearch');
+        idSearch.addEventListener('click', searchID);
+        async function searchID(e){
+            e.preventDefault();
+
+            let res = await fetch(url+'/employee?id='+document.getElementById('EmployeeID').value,
+            {
+                method : 'GET'
+            }
+            )
+            const data = await res.json();   
+            tableUpdate(data);
+            console.log(data);
+        }
+        async function getData(e){
+            e.preventDefault();
+            let res = await fetch(url+'/employees',
+            {
+                method : 'GET'
+            }
+            )
+            const data = await res.json()
+            console.log(data);
+            tableUpdate(data);
+            selectUpdate(); 
+        } 
+
+        function selectUpdate(){
+        const departmentSelect = document.getElementById('department');
+        const departmentNames = [
+            'Legal',
+            'Sales',
+            'Product Management',
+            'Research and Development',
+            'Marketing',
+            'Human Resources',
+            'Services',
+            'Accounting',
+            'Engineering',
+            'Training',
+            'Business Development',
+            'Support'
+        ];
+        departmentNames.forEach(departmentName => {
+        const option = document.createElement('option');
+        option.value = departmentName; 
+        option.textContent = departmentName;
+        departmentSelect.appendChild(option);
+        });
+    }
+
+    function tableUpdate(data){
+        let table = document.getElementById('tableContent');
+        table.innerHTML = '';
+            data.forEach((employee)=>{
+                const row = table.insertRow();
+                row.insertCell(0).textContent = employee.id;
+                row.insertCell(1).textContent = employee.fullname;
+                row.insertCell(2).textContent = employee.department;
+                row.insertCell(3).textContent = employee.dob;
+                row.insertCell(4).textContent = employee.age;
+                row.insertCell(5).textContent = employee.salary;
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', () => editEmployee(employee));
+                editButton.className = "btn btn-warning btn-sm"
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = "btn btn-danger btn-sm"
+                deleteButton.addEventListener('click', () => deleteEmployee(employee.id)); 
+
+                // Add buttons to the last cell
+                const actionsCell = row.insertCell(6);
+                actionsCell.appendChild(editButton);
+                actionsCell.appendChild(document.createTextNode(' '));
+                actionsCell.appendChild(deleteButton);
+
+            })
+
+    function editEmployee(employee) {
+        $("#addEmployeeModal").modal("show")
+        document.getElementById("fullname").value = employee.fullname;
+        document.getElementById("dob").value = employee.dob;
+        document.getElementById("department").value = employee.department;
+        document.getElementById("salary").value = employee.salary;
+
+        document.getElementById("addEmployeelabel").innerHTML = "Edit Employee - "+employee.id;
+        document.getElementById("modalSubmit").innerHTML = "Edit Employee";
+    }
+
+    function deleteEmployee(employeeId) {
+        fetch(url+'/deleteEmployee/'+employeeId, 
+        {
+            method : 'DELETE',
+            headers :{
+                "Content-Type" : "application/json"
+            }
+        })
+        .then(data => {
+            location.reload()
+            console.log(data.message)
+        })
+    }
+    }
+    window.onload = getData;
+    </script>
+  </body>
+</html>
